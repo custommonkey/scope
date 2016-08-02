@@ -2,6 +2,7 @@
 
 extern crate glium;
 
+mod thing;
 
 fn main() {
 
@@ -31,6 +32,7 @@ fn main() {
         void main() {
             vec2 pos = position;
             pos.x += t;
+            pos.y += noise1((pos.y +t)*10);
             gl_Position = vec4(pos, 0.0, 1.0);
         }
     "#;
@@ -63,11 +65,14 @@ fn main() {
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
 
-    let mut t: f32 = -0.5;
+    let mut a_thing = thing::AThing {
+        speed: 0.0005,
+        position: -0.5,
+    };
 
     loop {
 
-        t = next_position(t);
+        a_thing = a_thing.next();
 
         let mut target = display.draw();
 
@@ -76,7 +81,7 @@ fn main() {
         target.draw(&vertex_buffer,
                   &indices,
                   &program,
-                  &uniform! {t: t},
+                  &uniform! {t: a_thing.position},
                   &params)
             .unwrap();
 
@@ -88,16 +93,6 @@ fn main() {
                 _ => (),
             }
         }
-    }
-
-}
-
-fn next_position(t: f32) -> f32 {
-
-    if t > 0.5 {
-        return -0.5;
-    } else {
-        return t + 0.0002;
     }
 
 }
