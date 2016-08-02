@@ -1,1 +1,5 @@
 # scope
+
+## Execution
+
+    cargo run
