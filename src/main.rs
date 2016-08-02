@@ -2,11 +2,11 @@
 
 extern crate glium;
 
+
 fn main() {
 
     use glium::DisplayBuild;
     use glium::Surface;
-
 
     let params = glium::DrawParameters {
         point_size: Some(10.0),
@@ -57,8 +57,8 @@ fn main() {
             .unwrap();
 
     let vertex1 = Vertex { position: [-0.5, -0.5] };
-    let vertex2 = Vertex { position: [ 0.0,  0.5] };
-    let vertex3 = Vertex { position: [ 0.5, -0.25] };
+    let vertex2 = Vertex { position: [0.0, 0.5] };
+    let vertex3 = Vertex { position: [0.5, -0.25] };
     let shape = vec![vertex1, vertex2, vertex3];
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
@@ -67,12 +67,7 @@ fn main() {
 
     loop {
 
-        // we update `t`
-        t += 0.0002;
-        if t > 0.5 {
-            t = -0.5;
-        }
-
+        t = next_position(t);
 
         let mut target = display.draw();
 
@@ -93,6 +88,16 @@ fn main() {
                 _ => (),
             }
         }
+    }
+
+}
+
+fn next_position(t: f32) -> f32 {
+
+    if t > 0.5 {
+        return -0.5;
+    } else {
+        return t + 0.0002;
     }
 
 }
