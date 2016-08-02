@@ -1,0 +1,7 @@
+[package]
+name = "scope"
+version = "0.1.0"
+authors = ["Jeff Martin <jeff@custommonkey.org>"]
+
+[dependencies]
+glium = "0.15.0"
