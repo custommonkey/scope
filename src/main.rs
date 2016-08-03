@@ -4,19 +4,30 @@ extern crate glium;
 
 mod thing;
 
+use glium::DisplayBuild;
+use glium::DrawParameters;
+use glium::PolygonMode;
+use glium::Program;
+use glium::Surface;
+use glium::VertexBuffer;
+use glium::framebuffer::SimpleFrameBuffer;
+use glium::glutin::Event;
+use glium::glutin::WindowBuilder;
+use glium::index::NoIndices;
+use glium::index::PrimitiveType::TrianglesList;
+use glium::texture::*;
+use glium::texture;
+
 fn main() {
 
-    use glium::DisplayBuild;
-    use glium::Surface;
-
-    let params = glium::DrawParameters {
+    let params = DrawParameters {
         point_size: Some(10.0),
-        polygon_mode: glium::PolygonMode::Line,
+        polygon_mode: PolygonMode::Line,
         multisampling: true, // Why isn't this having any effect
         ..Default::default()
     };
 
-    let display = glium::glutin::WindowBuilder::new()
+    let display = WindowBuilder::new()
         .with_dimensions(1024, 768)
         .with_title(format!("Hello world"))
         .build_glium()
@@ -52,18 +63,17 @@ fn main() {
 
     implement_vertex!(Vertex, position);
 
-    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
+    let indices = NoIndices(TrianglesList);
 
-    let program =
-        glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None)
-            .unwrap();
+    let program = Program::from_source(&display, vertex_shader_src, fragment_shader_src, None)
+        .unwrap();
 
     let vertex1 = Vertex { position: [-0.5, -0.5] };
     let vertex2 = Vertex { position: [0.0, 0.5] };
     let vertex3 = Vertex { position: [0.5, -0.25] };
     let shape = vec![vertex1, vertex2, vertex3];
 
-    let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
+    let vertex_buffer = VertexBuffer::new(&display, &shape).unwrap();
 
     let mut a_thing = thing::AThing {
         speed: 0.0005,
@@ -89,7 +99,7 @@ fn main() {
 
         for ev in display.poll_events() {
             match ev {
-                glium::glutin::Event::Closed => return,
+                Event::Closed => return,
                 _ => (),
             }
         }
