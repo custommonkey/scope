@@ -4,7 +4,9 @@ extern crate glium;
 
 mod thing;
 
-//use glium::glutin;
+use std::io::prelude::*;
+use std::fs::File;
+// use glium::glutin;
 use glium::BlitTarget;
 use glium::DisplayBuild;
 use glium::DrawParameters;
@@ -62,100 +64,13 @@ fn main() {
         .build_glium()
         .unwrap();
 
-    let vertex_shader_src = r#"
-        #version 140
+    let vertex_shader_src = &load_shader("vertex.glsl");
 
-        in vec2 position;
+    let vertex_blur = &load_shader("vertex_blur.glsl");
 
-        uniform float t;
-        uniform float time;
+    let fragment_shader_src1 = &load_shader("fragment.glsl");
 
-        void main() {
-            vec2 pos = position;
-            pos.y += noise1(time + pos.x) / 2;
-            gl_Position = vec4(pos, 0.0, 1.0);
-        }
-    "#;
-
-    let vertex_blur = r#"
-        #version 140
-
-        in vec2 position;
-
-        void main() {
-            vec2 pos = position;
-            gl_Position = vec4(pos, 0.0, 1.0);
-        }
-    "#;
-
-    let fragment_shader_src1 = r#"
-        #version 140
-
-        out vec4 color;
-
-        void main() {
-            color = vec4(1.0, 1.0, 1.0, 1.0);
-        }
-    "#;
-
-    let fragment_blur = r#"
-        #version 140
-
-        out vec4 color;
-
-        uniform sampler2D fb;
-
-		vec2 iResolution = vec2(1024, 768);
-
-        float normpdf(in float x, in float sigma) {
-			return 0.39894 * exp(-0.5 * x * x / (sigma * sigma)) / sigma;
-		}
-
-        const int mSize = 11;
-        const int kSize = (mSize-1)/2;
-        const float sigma = 7.0;
-
-
-        void main() {
-
-	        vec3 c = texture(fb, gl_FragCoord.xy).rgb;
-
-
-	    	//declare stuff
-			vec3 final_colour = vec3(0.0);
-
-			//create the 1-D kernel
-			float Z = 0.0;
-
-			float kernel[mSize];
-			for (int j = 0; j <= kSize; ++j) {
-				kernel[kSize+j] = kernel[kSize-j] = normpdf(float(j), sigma);
-			}
-
-
-			//get the normalization factor (as the gaussian has been clamped)
-			for (int j = 0; j < mSize; ++j) {
-				Z += kernel[j];
-			}
-
-            vec3 back = vec3(0.9, 0.9, 0.9);
-
-			//read out the texels
-			for (int i =- kSize; i <= kSize; ++i) {
-				for (int j =- kSize; j <= kSize; ++j) {
-					final_colour += kernel[kSize+j]
-                        * kernel[kSize + i]
-                        * texture(fb, (gl_FragCoord.xy + vec2(float(i), float(j))) / iResolution.xy).rgb
-                        * back
-                        ;
-				}
-			}
-
-
-			color = vec4(final_colour/(Z*Z), 1.0);
-
-        }
-    "#;
+    let fragment_blur = &load_shader("fragment_blur.glsl");
 
     let program = Program::from_source(&display, vertex_shader_src, fragment_shader_src1, None)
         .unwrap();
@@ -220,4 +135,11 @@ fn main() {
         }
     }
 
+}
+
+fn load_shader(name: &'static str) -> String {
+    let mut f = File::open(name).unwrap();
+    let mut s = String::new();
+    f.read_to_string(&mut s).unwrap();
+    return s;
 }
