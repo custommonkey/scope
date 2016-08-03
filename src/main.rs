@@ -4,6 +4,7 @@ extern crate glium;
 
 mod thing;
 
+//use glium::glutin;
 use glium::BlitTarget;
 use glium::DisplayBuild;
 use glium::DrawParameters;
@@ -16,8 +17,7 @@ use glium::framebuffer::SimpleFrameBuffer;
 use glium::glutin::Event;
 use glium::glutin::WindowBuilder;
 use glium::index::NoIndices;
-use glium::index::PrimitiveType::LineStrip;
-use glium::index::PrimitiveType::TrianglesList;
+use glium::index::PrimitiveType;
 use glium::texture::MipmapsOption;
 use glium::texture::Texture2d;
 use glium::texture::UncompressedFloatFormat;
@@ -35,8 +35,8 @@ fn main() {
     let dest = BlitTarget {
         left: 0,
         bottom: 0,
-        width: 1024,
-        height: 768,
+        width: src.width as i32,
+        height: src.height as i32,
     };
 
     let params = DrawParameters {
@@ -56,6 +56,7 @@ fn main() {
     };
 
     let display = WindowBuilder::new()
+        //.with_fullscreen(glutin::get_primary_monitor())
         .with_dimensions(src.width, src.height)
         .with_title(format!("Hello world"))
         .build_glium()
@@ -93,7 +94,7 @@ fn main() {
         out vec4 color;
 
         void main() {
-            color = vec4(0.48, 0.31, 0.22, 1.0);
+            color = vec4(1.0, 1.0, 1.0, 1.0);
         }
     "#;
 
@@ -135,15 +136,19 @@ fn main() {
 				Z += kernel[j];
 			}
 
+            vec3 back = vec3(0.9, 0.9, 0.9);
+
 			//read out the texels
 			for (int i =- kSize; i <= kSize; ++i) {
 				for (int j =- kSize; j <= kSize; ++j) {
-					final_colour += kernel[kSize+j] * kernel[kSize+i] *
-						texture(fb, (gl_FragCoord.xy + vec2(float(i), float(j))) / iResolution.xy).rgb;
+					final_colour += kernel[kSize+j]
+                        * kernel[kSize + i]
+                        * texture(fb, (gl_FragCoord.xy + vec2(float(i), float(j))) / iResolution.xy).rgb
+                        * back
+                        ;
 				}
 			}
 
-            //vec4(0.92, 0.91, 0.81, 1.0);
 
 			color = vec4(final_colour/(Z*Z), 1.0);
 
@@ -157,9 +162,9 @@ fn main() {
 
     let mut a_thing = thing::AThing::new();
 
-    let indices = NoIndices(LineStrip);
+    let indices = NoIndices(PrimitiveType::LineStrip);
 
-    let blur_indices = NoIndices(TrianglesList);
+    let blur_indices = NoIndices(PrimitiveType::TrianglesList);
 
     let vertex_buffer = VertexBuffer::new(&display, &a_thing.shape()).unwrap();
 
