@@ -16,6 +16,7 @@ use glium::framebuffer::SimpleFrameBuffer;
 use glium::glutin::Event;
 use glium::glutin::WindowBuilder;
 use glium::index::NoIndices;
+use glium::index::PrimitiveType::LineStrip;
 use glium::index::PrimitiveType::TrianglesList;
 use glium::texture::MipmapsOption;
 use glium::texture::Texture2d;
@@ -40,6 +41,15 @@ fn main() {
 
     let params = DrawParameters {
         point_size: Some(10.0),
+        line_width: Some(10.0),
+        polygon_mode: PolygonMode::Line,
+        multisampling: true, // Why isn't this having any effect
+        ..Default::default()
+    };
+
+    let blur_params = DrawParameters {
+        point_size: Some(10.0),
+        line_width: Some(10.0),
         polygon_mode: PolygonMode::Fill,
         multisampling: true, // Why isn't this having any effect
         ..Default::default()
@@ -57,11 +67,22 @@ fn main() {
         in vec2 position;
 
         uniform float t;
+        uniform float time;
 
         void main() {
             vec2 pos = position;
-            pos.x += t + noise1((pos.x + t) * 50) / 10;
-            pos.y += noise1((pos.y + t) * 50) / 10;
+            pos.y += noise1((100 - pos.x) * time) / 2;
+            gl_Position = vec4(pos, 0.0, 1.0);
+        }
+    "#;
+
+    let vertex_blur = r#"
+        #version 140
+
+        in vec2 position;
+
+        void main() {
+            vec2 pos = position;
             gl_Position = vec4(pos, 0.0, 1.0);
         }
     "#;
@@ -76,7 +97,7 @@ fn main() {
         }
     "#;
 
-    let fragment_shader_src2 = r#"
+    let fragment_blur = r#"
         #version 140
 
         out vec4 color;
@@ -115,12 +136,14 @@ fn main() {
 			}
 
 			//read out the texels
-			for (int i=-kSize; i <= kSize; ++i) {
-				for (int j=-kSize; j <= kSize; ++j) {
+			for (int i =- kSize; i <= kSize; ++i) {
+				for (int j =- kSize; j <= kSize; ++j) {
 					final_colour += kernel[kSize+j] * kernel[kSize+i] *
-						texture(fb, (gl_FragCoord.xy+vec2(float(i),float(j))) / iResolution.xy).rgb;
+						texture(fb, (gl_FragCoord.xy + vec2(float(i), float(j))) / iResolution.xy).rgb;
 				}
 			}
+
+            //vec4(0.92, 0.91, 0.81, 1.0);
 
 			color = vec4(final_colour/(Z*Z), 1.0);
 
@@ -130,14 +153,17 @@ fn main() {
     let program = Program::from_source(&display, vertex_shader_src, fragment_shader_src1, None)
         .unwrap();
 
-    let blur_program =
-        Program::from_source(&display, vertex_shader_src, fragment_shader_src2, None).unwrap();
+    let blur_program = Program::from_source(&display, vertex_blur, fragment_blur, None).unwrap();
 
     let mut a_thing = thing::AThing::new();
 
-    let indices = NoIndices(TrianglesList);
+    let indices = NoIndices(LineStrip);
+
+    let blur_indices = NoIndices(TrianglesList);
 
     let vertex_buffer = VertexBuffer::new(&display, &a_thing.shape()).unwrap();
+
+    let blur_vertex_buffer = VertexBuffer::new(&display, &thing::back()).unwrap();
 
     let texture = Texture2d::empty_with_format(&display,
                                                UncompressedFloatFormat::U8U8U8,
@@ -149,23 +175,23 @@ fn main() {
 
     let mut framebuffer = SimpleFrameBuffer::new(&display, &texture).unwrap();
 
+    framebuffer.clear_color(0.92, 0.91, 0.81, 1.0);
+
     loop {
 
-        framebuffer.clear_color(0.92, 0.91, 0.81, 1.0);
+        framebuffer.draw(&blur_vertex_buffer,
+                  &blur_indices,
+                  &blur_program,
+                  &uniform! { fb: &texture },
+                  &blur_params)
+            .unwrap();
 
         a_thing = a_thing.next();
 
         framebuffer.draw(&vertex_buffer,
                   &indices,
                   &program,
-                  &uniform! {t: a_thing.position },
-                  &params)
-            .unwrap();
-
-        framebuffer.draw(&vertex_buffer,
-                  &indices,
-                  &blur_program,
-                  &uniform! {t: a_thing.position, fb: &texture },
+                  &uniform! {t: a_thing.position, time: a_thing.time },
                   &params)
             .unwrap();
 
