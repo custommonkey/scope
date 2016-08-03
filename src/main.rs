@@ -97,7 +97,7 @@ fn main() {
 
     let mut framebuffer = SimpleFrameBuffer::new(&display, &texture).unwrap();
 
-    framebuffer.clear_color(0.92, 0.91, 0.81, 1.0);
+    framebuffer.clear_color(0.0, 0.0, 0.0, 1.0);
 
     loop {
 

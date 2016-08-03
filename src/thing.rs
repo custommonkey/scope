@@ -14,13 +14,16 @@ implement_vertex!(Vertex, position);
 
 pub fn back() -> Vec<Vertex> {
 
+    let x = 1.0;
+    let y = 0.5;
+
     return vec![
-        Vertex { position: [-1.0, -1.0] },
-        Vertex { position: [1.0, 1.0] },
-        Vertex { position: [1.0, -1.0] },
-        Vertex { position: [-1.0, -1.0] },
-        Vertex { position: [1.0, 1.0] },
-        Vertex { position: [-1.0, 1.0] },
+        Vertex { position: [-x, -y] },
+        Vertex { position: [x, y] },
+        Vertex { position: [x, -y] },
+        Vertex { position: [-x, -y] },
+        Vertex { position: [x, y] },
+        Vertex { position: [-x, y] },
     ];
 
 }
