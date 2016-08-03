@@ -4,25 +4,23 @@ extern crate glium;
 
 mod thing;
 
-use glium::uniforms::MagnifySamplerFilter;
-use glium::texture::Texture2d;
-use glium::texture::UncompressedFloatFormat;
-use glium::texture::MipmapsOption;
-use glium::VertexBuffer;
+use glium::BlitTarget;
 use glium::DisplayBuild;
 use glium::DrawParameters;
 use glium::PolygonMode;
 use glium::Program;
+use glium::Rect;
 use glium::Surface;
+use glium::VertexBuffer;
+use glium::framebuffer::SimpleFrameBuffer;
 use glium::glutin::Event;
 use glium::glutin::WindowBuilder;
 use glium::index::NoIndices;
 use glium::index::PrimitiveType::TrianglesList;
-use glium::Rect;
-use glium::BlitTarget;
-use glium::framebuffer::SimpleFrameBuffer;
-
-
+use glium::texture::MipmapsOption;
+use glium::texture::Texture2d;
+use glium::texture::UncompressedFloatFormat;
+use glium::uniforms::MagnifySamplerFilter;
 
 fn main() {
 
@@ -153,12 +151,9 @@ fn main() {
 
     loop {
 
-        a_thing = a_thing.next();
-
-        let target = display.draw();
-
         framebuffer.clear_color(0.92, 0.91, 0.81, 1.0);
 
+        a_thing = a_thing.next();
 
         framebuffer.draw(&vertex_buffer,
                   &indices,
@@ -174,11 +169,12 @@ fn main() {
                   &params)
             .unwrap();
 
+        let target = display.draw();
+
         target.blit_from_simple_framebuffer(&framebuffer,
                                             &src,
                                             &dest,
                                             MagnifySamplerFilter::Nearest);
-
 
 
         target.finish().unwrap();
