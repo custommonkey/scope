@@ -76,13 +76,13 @@ impl AThing {
             return AThing {
                 speed: -self.speed,
                 position: self.position - self.speed,
-                time: self.time + 0.1,
+                time: self.time + 0.2,
             };
         } else {
             return AThing {
                 speed: self.speed,
                 position: self.position + self.speed,
-                time: self.time + 0.1,
+                time: self.time + 0.2,
             };
         }
 
