@@ -4,21 +4,41 @@ extern crate glium;
 
 mod thing;
 
+use glium::uniforms::MagnifySamplerFilter;
+use glium::texture::Texture2d;
+use glium::texture::UncompressedFloatFormat;
+use glium::texture::MipmapsOption;
+use glium::VertexBuffer;
 use glium::DisplayBuild;
 use glium::DrawParameters;
 use glium::PolygonMode;
 use glium::Program;
 use glium::Surface;
-use glium::VertexBuffer;
-use glium::framebuffer::SimpleFrameBuffer;
 use glium::glutin::Event;
 use glium::glutin::WindowBuilder;
 use glium::index::NoIndices;
 use glium::index::PrimitiveType::TrianglesList;
-use glium::texture::*;
-use glium::texture;
+use glium::Rect;
+use glium::BlitTarget;
+use glium::framebuffer::SimpleFrameBuffer;
+
+
 
 fn main() {
+
+    let src = Rect {
+        left: 0,
+        bottom: 0,
+        width: 1024,
+        height: 768,
+    };
+
+    let dest = BlitTarget {
+        left: 0,
+        bottom: 0,
+        width: 1024,
+        height: 768,
+    };
 
     let params = DrawParameters {
         point_size: Some(10.0),
@@ -28,7 +48,7 @@ fn main() {
     };
 
     let display = WindowBuilder::new()
-        .with_dimensions(1024, 768)
+        .with_dimensions(src.width, src.height)
         .with_title(format!("Hello world"))
         .build_glium()
         .unwrap();
@@ -43,7 +63,7 @@ fn main() {
         void main() {
             vec2 pos = position;
             pos.x += t;
-            pos.y += noise1((pos.y +t)*10);
+            pos.y += noise1((pos.y + t) * 10);
             gl_Position = vec4(pos, 0.0, 1.0);
         }
     "#;
@@ -51,34 +71,33 @@ fn main() {
     let fragment_shader_src = r#"
         #version 140
         out vec4 color;
+        
+        uniform sampler2D fb;
+
         void main() {
             color = vec4(0.48, 0.31, 0.22, 1.0);
         }
     "#;
 
-    #[derive(Copy, Clone)]
-    struct Vertex {
-        position: [f32; 2],
-    }
-
-    implement_vertex!(Vertex, position);
-
-    let indices = NoIndices(TrianglesList);
 
     let program = Program::from_source(&display, vertex_shader_src, fragment_shader_src, None)
         .unwrap();
 
-    let vertex1 = Vertex { position: [-0.5, -0.5] };
-    let vertex2 = Vertex { position: [0.0, 0.5] };
-    let vertex3 = Vertex { position: [0.5, -0.25] };
-    let shape = vec![vertex1, vertex2, vertex3];
+    let mut a_thing = thing::AThing::new();
 
-    let vertex_buffer = VertexBuffer::new(&display, &shape).unwrap();
+    let indices = NoIndices(TrianglesList);
 
-    let mut a_thing = thing::AThing {
-        speed: 0.0005,
-        position: -0.5,
-    };
+    let vertex_buffer = VertexBuffer::new(&display, &a_thing.shape()).unwrap();
+
+    let texture = Texture2d::empty_with_format(&display,
+                                               UncompressedFloatFormat::U8U8U8,
+                                               MipmapsOption::NoMipmap,
+                                               src.width,
+                                               src.height)
+        .unwrap();
+
+
+    let mut framebuffer = SimpleFrameBuffer::new(&display, &texture).unwrap();
 
     loop {
 
@@ -86,14 +105,23 @@ fn main() {
 
         let mut target = display.draw();
 
+        framebuffer.clear_color(0.92, 0.91, 0.81, 1.0);
+
         target.clear_color(0.92, 0.91, 0.81, 1.0);
 
-        target.draw(&vertex_buffer,
+        framebuffer.draw(&vertex_buffer,
                   &indices,
                   &program,
-                  &uniform! {t: a_thing.position},
+                  &uniform! {t: a_thing.position, fb: &texture},
                   &params)
             .unwrap();
+
+        target.blit_from_simple_framebuffer(&framebuffer,
+                                            &src,
+                                            &dest,
+                                            MagnifySamplerFilter::Nearest);
+
+
 
         target.finish().unwrap();
 
