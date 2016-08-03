@@ -38,39 +38,15 @@ impl AThing {
     }
 
     pub fn shape(&self) -> Vec<Vertex> {
-        return vec![
-            Vertex { position: [-0.75, 0.0] },
-            Vertex { position: [-0.7, 0.0] },
-            Vertex { position: [-0.65, 0.0] },
-            Vertex { position: [-0.6, 0.0] },
-            Vertex { position: [-0.55, 0.0] },
-            Vertex { position: [-0.5, 0.0] },
-            Vertex { position: [-0.45, 0.0] },
-            Vertex { position: [-0.4, 0.0] },
-            Vertex { position: [-0.35, 0.0] },
-            Vertex { position: [-0.3, 0.0] },
-            Vertex { position: [-0.25, 0.0] },
-            Vertex { position: [-0.2, 0.0] },
-            Vertex { position: [-0.15, 0.0] },
-            Vertex { position: [-0.1, 0.0] },
-            Vertex { position: [-0.05, 0.0] },
-            Vertex { position: [0.0, 0.0] },
-            Vertex { position: [0.05, 0.0] },
-            Vertex { position: [0.1, 0.0] },
-            Vertex { position: [0.15, 0.0] },
-            Vertex { position: [0.2, 0.0] },
-            Vertex { position: [0.25, 0.0] },
-            Vertex { position: [0.3, 0.0] },
-            Vertex { position: [0.35, 0.0] },
-            Vertex { position: [0.4, 0.0] },
-            Vertex { position: [0.45, 0.0] },
-            Vertex { position: [0.5, 0.0] },
-            Vertex { position: [0.55, 0.0] },
-            Vertex { position: [0.6, 0.0] },
-            Vertex { position: [0.65, 0.0] },
-            Vertex { position: [0.7, 0.0] },
-            Vertex { position: [0.75, 0.0] },
-        ];
+
+        let mut v = Vec::new();
+
+        for n in -90..91 {
+            let f = (n as f32) / 100.0;
+            v.push(Vertex { position: [f, 0.0] });
+        }
+
+        return v;
     }
 
     pub fn next(&self) -> AThing {
