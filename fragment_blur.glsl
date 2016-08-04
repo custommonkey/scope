@@ -13,7 +13,9 @@ float normpdf(in float x, in float sigma) {
 const int mSize = 11;
 const int kSize = (mSize - 1) / 2;
 const float sigma = 7.0;
-const vec3 back = vec3(0.9, 0.9, 0.93);
+const vec3 back = vec3(0.95, 0.95, 0.96);
+
+float kernel[mSize];
 
 void main() {
 
@@ -25,9 +27,7 @@ void main() {
 	//create the 1-D kernel
 	float Z = 0.0;
 
-	float kernel[mSize];
-
-	for (int j = 0; j <= kSize; ++j) {
+    for (int j = 0; j <= kSize; ++j) {
 		kernel[kSize + j] = kernel[kSize - j] = normpdf(float(j), sigma);
 	}
 

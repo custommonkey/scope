@@ -2,6 +2,7 @@ use glium::backend::glutin_backend::GlutinFacade;
 use glium::Program;
 
 use std::io::prelude::*;
+
 use std::fs::File;
 
 pub struct Filter {
@@ -23,7 +24,7 @@ impl Filter {
 }
 
 fn load_shader(name: &'static str) -> String {
-    let mut f = File::open(name).unwrap();
+    let mut f = File::open(name.to_string() + ".glsl").unwrap();
     let mut s = String::new();
     f.read_to_string(&mut s).unwrap();
     return s;

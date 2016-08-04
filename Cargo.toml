@@ -5,3 +5,4 @@ authors = ["Jeff Martin <jeff@custommonkey.org>"]
 
 [dependencies]
 glium = "0.15.0"
+image = "*"
