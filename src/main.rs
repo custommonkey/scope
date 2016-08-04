@@ -57,7 +57,7 @@ fn main() {
     let display = WindowBuilder::new()
         //.with_fullscreen(glutin::get_primary_monitor())
         .with_dimensions(src.width, src.height)
-        .with_title(format!("Hello world"))
+        .with_title(format!("Scope"))
         .build_glium()
         .unwrap();
 
