@@ -1,3 +1,5 @@
+use glium::backend::glutin_backend::GlutinFacade;
+use glium::VertexBuffer;
 
 pub struct AThing {
     pub speed: f32,
@@ -12,7 +14,7 @@ pub struct Vertex {
 
 implement_vertex!(Vertex, position);
 
-pub fn back() -> Vec<Vertex> {
+fn back() -> Vec<Vertex> {
 
     let x = 1.0;
     let y = 0.5;
@@ -37,7 +39,7 @@ impl AThing {
         };
     }
 
-    pub fn shape(&self) -> Vec<Vertex> {
+    fn shape(&self) -> Vec<Vertex> {
 
         let mut v = Vec::new();
 
@@ -47,6 +49,14 @@ impl AThing {
         }
 
         return v;
+    }
+
+    pub fn buffer(&self, display: &GlutinFacade) -> VertexBuffer<Vertex> {
+        return VertexBuffer::new(display, &self.shape()).unwrap();
+    }
+
+    pub fn back_buffer(&self, display: &GlutinFacade) -> VertexBuffer<Vertex> {
+        return VertexBuffer::new(display, &back()).unwrap();
     }
 
     pub fn next(&self) -> AThing {

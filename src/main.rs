@@ -3,18 +3,15 @@
 extern crate glium;
 
 mod thing;
+mod filter;
 
-use std::io::prelude::*;
-use std::fs::File;
-// use glium::glutin;
+use filter::Filter;
 use glium::BlitTarget;
 use glium::DisplayBuild;
 use glium::DrawParameters;
 use glium::PolygonMode;
-use glium::Program;
 use glium::Rect;
 use glium::Surface;
-use glium::VertexBuffer;
 use glium::framebuffer::SimpleFrameBuffer;
 use glium::glutin::Event;
 use glium::glutin::WindowBuilder;
@@ -64,18 +61,14 @@ fn main() {
         .build_glium()
         .unwrap();
 
-    let vertex_shader_src = &load_shader("vertex.glsl");
+    let f1 = Filter::new("vertex.glsl", "fragment.glsl");
 
-    let vertex_blur = &load_shader("vertex_blur.glsl");
+    let blur = Filter::new("vertex_blur.glsl", "fragment_blur.glsl");
 
-    let fragment_shader_src1 = &load_shader("fragment.glsl");
 
-    let fragment_blur = &load_shader("fragment_blur.glsl");
+    let program = f1.program(&display);
 
-    let program = Program::from_source(&display, vertex_shader_src, fragment_shader_src1, None)
-        .unwrap();
-
-    let blur_program = Program::from_source(&display, vertex_blur, fragment_blur, None).unwrap();
+    let blur_program = blur.program(&display);
 
     let mut a_thing = thing::AThing::new();
 
@@ -83,9 +76,9 @@ fn main() {
 
     let blur_indices = NoIndices(PrimitiveType::TrianglesList);
 
-    let vertex_buffer = VertexBuffer::new(&display, &a_thing.shape()).unwrap();
+    let vertex_buffer = a_thing.buffer(&display);
 
-    let blur_vertex_buffer = VertexBuffer::new(&display, &thing::back()).unwrap();
+    let blur_vertex_buffer = a_thing.back_buffer(&display);
 
     let texture = Texture2d::empty_with_format(&display,
                                                UncompressedFloatFormat::U8U8U8,
@@ -135,11 +128,4 @@ fn main() {
         }
     }
 
-}
-
-fn load_shader(name: &'static str) -> String {
-    let mut f = File::open(name).unwrap();
-    let mut s = String::new();
-    f.read_to_string(&mut s).unwrap();
-    return s;
 }
