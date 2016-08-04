@@ -11,8 +11,9 @@ float normpdf(in float x, in float sigma) {
 }
 
 const int mSize = 11;
-const int kSize = (mSize-1)/2;
+const int kSize = (mSize - 1) / 2;
 const float sigma = 7.0;
+const vec3 back = vec3(0.9, 0.95, 0.9);
 
 void main() {
 
@@ -27,15 +28,13 @@ void main() {
 	float kernel[mSize];
 
 	for (int j = 0; j <= kSize; ++j) {
-		kernel[kSize+j] = kernel[kSize-j] = normpdf(float(j), sigma);
+		kernel[kSize + j] = kernel[kSize - j] = normpdf(float(j), sigma);
 	}
 
 	//get the normalization factor (as the gaussian has been clamped)
 	for (int j = 0; j < mSize; ++j) {
 		Z += kernel[j];
 	}
-
-	vec3 back = vec3(0.9, 0.95, 0.9);
 
 	//read out the texels
 	for (int i =- kSize; i <= kSize; ++i) {
@@ -48,6 +47,6 @@ void main() {
 		}
 	}
 
-	color = vec4(final_colour/(Z*Z), 1.0);
+	color = vec4(final_colour/(Z * Z), 1.0);
 
 }
