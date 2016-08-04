@@ -39,20 +39,27 @@ fn main() {
     };
 
     let params = DrawParameters {
-        point_size: Some(10.0),
+        point_size: Some(2.0),
         line_width: Some(10.0),
         polygon_mode: PolygonMode::Line,
-        multisampling: true, // Why isn't this having any effect
+        multisampling: false, // Why isn't this having any effect
         ..Default::default()
     };
 
+    let indices1 = NoIndices(PrimitiveType::Points);
+    let indices2 = NoIndices(PrimitiveType::LineStrip);
+
     let blur_params = DrawParameters {
-        point_size: Some(10.0),
+        point_size: Some(2.0),
         line_width: Some(10.0),
         polygon_mode: PolygonMode::Fill,
-        multisampling: true, // Why isn't this having any effect
+        multisampling: false, // Why isn't this having any effect
         ..Default::default()
     };
+
+
+    let blur_indices = NoIndices(PrimitiveType::TrianglesList);
+
 
     let display = WindowBuilder::new()
         //.with_fullscreen(glutin::get_primary_monitor())
@@ -74,9 +81,6 @@ fn main() {
 
     let mut a_thing = thing::AThing::new();
 
-    let indices = NoIndices(PrimitiveType::LineStrip);
-
-    let blur_indices = NoIndices(PrimitiveType::TrianglesList);
 
     let vertex_buffer = a_thing.buffer(&display);
 
@@ -94,6 +98,8 @@ fn main() {
 
     framebuffer.clear_color(0.0, 0.0, 0.0, 1.0);
 
+    let mut count = 0;
+
     loop {
 
         framebuffer.draw(&blur_vertex_buffer,
@@ -104,6 +110,18 @@ fn main() {
             .unwrap();
 
         a_thing = a_thing.next();
+
+        let indices = if count < 3 {
+            indices1
+        } else {
+            indices2
+        };
+
+        count += 1;
+
+        if count > 50 {
+            count = 0;
+        }
 
         framebuffer.draw(&vertex_buffer,
                   &indices,

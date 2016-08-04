@@ -13,7 +13,7 @@ float normpdf(in float x, in float sigma) {
 const int mSize = 11;
 const int kSize = (mSize - 1) / 2;
 const float sigma = 7.0;
-const vec3 back = vec3(0.9, 0.95, 0.9);
+const vec3 back = vec3(0.9, 0.9, 0.93);
 
 void main() {
 
