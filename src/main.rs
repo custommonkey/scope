@@ -65,6 +65,8 @@ fn main() {
 
     let blur = Filter::new("vertex_blur.glsl", "fragment_blur.glsl");
 
+    // let blur1 = Filter::new("HBlurVertexShader.glsl", "BlurFragmentShader.glsl");
+    // let blur2 = Filter::new("VBlurVertexShader.glsl", "BlurFragmentShader.glsl");
 
     let program = f1.program(&display);
 
