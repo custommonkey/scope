@@ -12,6 +12,7 @@ use glium::DisplayBuild;
 use glium::DrawParameters;
 use glium::PolygonMode;
 use glium::Rect;
+use glium::Blend;
 use glium::Surface;
 use glium::framebuffer::SimpleFrameBuffer;
 use glium::glutin::Event;
@@ -23,7 +24,8 @@ use glium::texture::Texture2d;
 use glium::texture::UncompressedFloatFormat;
 use glium::uniforms::MagnifySamplerFilter;
 use std::time::SystemTime;
-use channel::Channel;
+
+use channel::ChannelFactory;
 
 fn main() {
 
@@ -41,22 +43,21 @@ fn main() {
         height: src.height as i32,
     };
 
-    let params = DrawParameters {
-        point_size: Some(2.0),
-        line_width: Some(10.0),
-        polygon_mode: PolygonMode::Line,
-        multisampling: false, // Why isn't this having any effect
-        ..Default::default()
-    };
-
-    //    let indices1 = NoIndices(PrimitiveType::Points);
-    let indices = NoIndices(PrimitiveType::LineStrip);
 
     let blur_params = DrawParameters {
         point_size: Some(2.0),
         line_width: Some(10.0),
         polygon_mode: PolygonMode::Fill,
         multisampling: false, // Why isn't this having any effect
+        ..Default::default()
+    };
+
+    let crt_params = DrawParameters {
+        point_size: Some(2.0),
+        line_width: Some(10.0),
+        polygon_mode: PolygonMode::Fill,
+        multisampling: false, // Why isn't this having any effect
+        //        blend: Blend::alpha_blending(),
         ..Default::default()
     };
 
@@ -84,10 +85,12 @@ fn main() {
 
     let crt_program = crt.program(&display);
 
-    let mut channel0 = Channel::new(0.0, &display);
-    let mut channel1 = Channel::new(0.1, &display);
-    let mut channel2 = Channel::new(0.2, &display);
-    let mut channel3 = Channel::new(0.3, &display);
+    let channel_factory = ChannelFactory::new(&display, &program);
+
+    let mut channel0 = channel_factory.channel(0.0);
+    let mut channel1 = channel_factory.channel(0.1);
+    let mut channel2 = channel_factory.channel(0.2);
+    let mut channel3 = channel_factory.channel(0.3);
 
     let blur_vertex_buffer = channel::back_buffer(&display);
 
@@ -124,7 +127,7 @@ fn main() {
                   &blur_indices,
                   &crt_program,
                   &uniform! { iChannel0: &texture, iChannel1: &snow, iGlobalTime: time },
-                  &blur_params)
+                  &crt_params)
             .unwrap();
 
         channel0.next();
@@ -132,10 +135,10 @@ fn main() {
         channel2.next();
         channel3.next();
 
-        channel0.draw(&mut framebuffer, &indices, &program, &params);
-        channel1.draw(&mut framebuffer, &indices, &program, &params);
-        channel2.draw(&mut framebuffer, &indices, &program, &params);
-        channel3.draw(&mut framebuffer, &indices, &program, &params);
+        channel0.draw(&mut framebuffer);
+        channel1.draw(&mut framebuffer);
+        channel2.draw(&mut framebuffer);
+        channel3.draw(&mut framebuffer);
 
         let target = display.draw();
 

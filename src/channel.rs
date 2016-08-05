@@ -1,18 +1,24 @@
 
+use glium::PolygonMode;
 
 use glium::Program;
 use glium::framebuffer::SimpleFrameBuffer;
 use glium::backend::glutin_backend::GlutinFacade;
 use glium::VertexBuffer;
-use glium::index::NoIndices;
+
 use glium::DrawParameters;
 use glium::Surface;
+use glium::index::NoIndices;
+use glium::index::PrimitiveType;
 
-pub struct Channel {
+pub struct Channel<'a> {
     pub speed: f32,
     pub position: f32,
     pub time: f32,
-    pub vertex: VertexBuffer<Vertex>,
+    vertex: VertexBuffer<Vertex>,
+    indices: &'a NoIndices,
+    program: &'a Program,
+    params: &'a DrawParameters<'a>,
 }
 
 #[derive(Copy, Clone)]
@@ -22,12 +28,20 @@ pub struct Vertex {
 
 implement_vertex!(Vertex, position);
 
-impl Channel {
-    pub fn new(y: f32, display: &GlutinFacade) -> Channel {
+impl<'a> Channel<'a> {
+    fn new(y: f32,
+           display: &GlutinFacade,
+           indices: &'a NoIndices,
+           program: &'a Program,
+           params: &'a DrawParameters)
+           -> Channel<'a> {
         Channel {
             speed: 0.0005,
             position: -0.5,
             time: 0.0,
+            indices: indices,
+            program: program,
+            params: params,
             vertex: {
                 let vertices: Vec<Vertex> = (-90..91)
                     .map(|n| Vertex { position: [(n as f32) / 100.0, y as f32] })
@@ -56,21 +70,49 @@ impl Channel {
 
     }
 
-    pub fn draw(&self,
-                framebuffer: &mut SimpleFrameBuffer,
-                indices: &NoIndices,
-                program: &Program,
-                params: &DrawParameters) {
+    pub fn draw(&self, framebuffer: &mut SimpleFrameBuffer) {
 
         framebuffer.draw(&self.vertex,
-                  indices,
-                  &program,
+                  self.indices,
+                  &self.program,
                   &uniform! {t: self.position, time: self.time },
-                  &params)
+                  &self.params)
             .unwrap();
     }
 }
 
+pub struct ChannelFactory<'a> {
+    display: &'a GlutinFacade,
+    indices: NoIndices,
+    program: &'a Program,
+    params: DrawParameters<'a>,
+}
+
+impl<'a> ChannelFactory<'a> {
+    pub fn new(display: &'a GlutinFacade, program: &'a Program) -> ChannelFactory<'a> {
+
+        let params = DrawParameters {
+            point_size: Some(2.0),
+            line_width: Some(10.0),
+            polygon_mode: PolygonMode::Line,
+            multisampling: false, // Why isn't this having any effect
+            ..Default::default()
+        };
+
+        let indices = NoIndices(PrimitiveType::LineStrip);
+
+        ChannelFactory {
+            display: display,
+            indices: indices,
+            program: program,
+            params: params,
+        }
+    }
+
+    pub fn channel(&self, y: f32) -> Channel {
+        Channel::new(y, self.display, &self.indices, self.program, &self.params)
+    }
+}
 
 pub fn back_buffer(display: &GlutinFacade) -> VertexBuffer<Vertex> {
 
