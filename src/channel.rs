@@ -53,7 +53,7 @@ impl<'a> Channel<'a> {
     }
 
 
-    pub fn next(&mut self) {
+    fn next(&mut self) {
 
         self.time = self.time + 0.005;
 
@@ -70,7 +70,9 @@ impl<'a> Channel<'a> {
 
     }
 
-    pub fn draw(&self, framebuffer: &mut SimpleFrameBuffer) {
+    pub fn draw(&mut self, framebuffer: &mut SimpleFrameBuffer) {
+
+        self.next();
 
         framebuffer.draw(&self.vertex,
                   self.indices,
@@ -79,6 +81,10 @@ impl<'a> Channel<'a> {
                   &self.params)
             .unwrap();
     }
+}
+
+trait Drawable {
+    fn draw(&self, framebuffer: &mut SimpleFrameBuffer);
 }
 
 pub struct ChannelFactory<'a> {

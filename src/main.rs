@@ -6,13 +6,13 @@ extern crate image;
 mod channel;
 mod filter;
 
+use channel::ChannelFactory;
 use filter::Filter;
 use glium::BlitTarget;
 use glium::DisplayBuild;
 use glium::DrawParameters;
 use glium::PolygonMode;
 use glium::Rect;
-use glium::Blend;
 use glium::Surface;
 use glium::framebuffer::SimpleFrameBuffer;
 use glium::glutin::Event;
@@ -24,8 +24,6 @@ use glium::texture::Texture2d;
 use glium::texture::UncompressedFloatFormat;
 use glium::uniforms::MagnifySamplerFilter;
 use std::time::SystemTime;
-
-use channel::ChannelFactory;
 
 fn main() {
 
@@ -130,15 +128,9 @@ fn main() {
                   &crt_params)
             .unwrap();
 
-        channel0.next();
-        channel1.next();
-        channel2.next();
-        channel3.next();
-
-        channel0.draw(&mut framebuffer);
-        channel1.draw(&mut framebuffer);
-        channel2.draw(&mut framebuffer);
-        channel3.draw(&mut framebuffer);
+        for c in vec![&mut channel0, &mut channel1, &mut channel2, &mut channel3] {
+            c.draw(&mut framebuffer);
+        }
 
         let target = display.draw();
 
