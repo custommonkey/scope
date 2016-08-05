@@ -41,14 +41,11 @@ impl AThing {
 
     fn shape(&self) -> Vec<Vertex> {
 
-        let mut v = Vec::new();
+        return (-90..91)
+            .map(|n| Vertex { position: [(n as f32) / 100.0, 0.0] })
+            .collect();
 
-        for n in -90..91 {
-            let f = (n as f32) / 100.0;
-            v.push(Vertex { position: [f, 0.0] });
-        }
 
-        return v;
     }
 
     pub fn buffer(&self, display: &GlutinFacade) -> VertexBuffer<Vertex> {
