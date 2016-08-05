@@ -3,7 +3,7 @@
 extern crate glium;
 extern crate image;
 
-mod thing;
+mod channel;
 mod filter;
 
 use filter::Filter;
@@ -23,6 +23,7 @@ use glium::texture::Texture2d;
 use glium::texture::UncompressedFloatFormat;
 use glium::uniforms::MagnifySamplerFilter;
 use std::time::SystemTime;
+use channel::Channel;
 
 fn main() {
 
@@ -83,11 +84,12 @@ fn main() {
 
     let crt_program = crt.program(&display);
 
-    let mut a_thing = thing::AThing::new();
+    let mut channel0 = Channel::new(0.0, &display);
+    let mut channel1 = Channel::new(0.1, &display);
+    let mut channel2 = Channel::new(0.2, &display);
+    let mut channel3 = Channel::new(0.3, &display);
 
-    let vertex_buffer = a_thing.buffer(&display);
-
-    let blur_vertex_buffer = a_thing.back_buffer(&display);
+    let blur_vertex_buffer = channel::back_buffer(&display);
 
     let snow = Texture2d::new(&display, load_image()).unwrap();
 
@@ -118,8 +120,6 @@ fn main() {
                   &blur_params)
             .unwrap();
 
-        a_thing = a_thing.next();
-
         framebuffer.draw(&blur_vertex_buffer,
                   &blur_indices,
                   &crt_program,
@@ -127,14 +127,15 @@ fn main() {
                   &blur_params)
             .unwrap();
 
-        framebuffer.draw(&vertex_buffer,
-                  &indices,
-                  &program,
-                  &uniform! {t: a_thing.position, time: a_thing.time },
-                  &params)
-            .unwrap();
+        channel0.next();
+        channel1.next();
+        channel2.next();
+        channel3.next();
 
-
+        channel0.draw(&mut framebuffer, &indices, &program, &params);
+        channel1.draw(&mut framebuffer, &indices, &program, &params);
+        channel2.draw(&mut framebuffer, &indices, &program, &params);
+        channel3.draw(&mut framebuffer, &indices, &program, &params);
 
         let target = display.draw();
 
@@ -142,7 +143,6 @@ fn main() {
                                             &src,
                                             &dest,
                                             MagnifySamplerFilter::Nearest);
-
 
         target.finish().unwrap();
 
@@ -157,13 +157,15 @@ fn main() {
 }
 
 fn load_image<'a>() -> glium::texture::RawImage2d<'a, u8> {
+
     use std::io::Cursor;
+
     let image = image::load(Cursor::new(&include_bytes!("static.png")[..]), image::PNG)
         .unwrap()
         .to_rgba();
+
     let image_dimensions = image.dimensions();
-    return glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions);
 
-
+    glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions)
 
 }
