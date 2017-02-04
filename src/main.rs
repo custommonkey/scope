@@ -7,7 +7,6 @@ mod channel;
 mod filter;
 
 use channel::ChannelFactory;
-use filter::Filter;
 use glium::BlitTarget;
 use glium::DisplayBuild;
 use glium::DrawParameters;
@@ -27,6 +26,8 @@ use std::time::SystemTime;
 
 fn main() {
 
+    let thing = [0 as i16];
+
     let src = Rect {
         left: 0,
         bottom: 0,
@@ -40,7 +41,6 @@ fn main() {
         width: src.width as i32,
         height: src.height as i32,
     };
-
 
     let blur_params = DrawParameters {
         point_size: Some(2.0),
@@ -68,20 +68,14 @@ fn main() {
         .build_glium()
         .unwrap();
 
-    let f1 = Filter::new("vertex", "fragment");
+    let program = filter::new("vertex", "fragment", &display);
 
-    let blur = Filter::new("vertex_blur", "fragment_blur");
+    let blur_program = filter::new("vertex_blur", "fragment_blur", &display);
 
-    let crt = Filter::new("vertex_blur", "crt");
+    let crt_program = filter::new("vertex_blur", "crt", &display);
 
     // let blur1 = Filter::new("HBlurVertexShader.glsl", "BlurFragmentShader.glsl");
     // let blur2 = Filter::new("VBlurVertexShader.glsl", "BlurFragmentShader.glsl");
-
-    let program = f1.program(&display);
-
-    let blur_program = blur.program(&display);
-
-    let crt_program = crt.program(&display);
 
     let channel_factory = ChannelFactory::new(&display, &program);
 
@@ -114,12 +108,13 @@ fn main() {
 
         let time = (elapsed.as_secs() as f32) + (elapsed.subsec_nanos() as f32) / 1000000000.0;
 
-        framebuffer.draw(&blur_vertex_buffer,
-                  &blur_indices,
-                  &blur_program,
-                  &uniform! { fb: &texture },
-                  &blur_params)
-            .unwrap();
+        // framebuffer.draw(&blur_vertex_buffer,
+        // &blur_indices,
+        // &blur_program,
+        // &uniform! { fb: &texture },
+        // &blur_params)
+        // .unwrap();
+        //
 
         framebuffer.draw(&blur_vertex_buffer,
                   &blur_indices,

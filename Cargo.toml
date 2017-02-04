@@ -2,7 +2,11 @@
 name = "scope"
 version = "0.1.0"
 authors = ["Jeff Martin <jeff@custommonkey.org>"]
+links = "ps2000a"
+build = "build.rs"
 
 [dependencies]
 glium = "0.15.0"
 image = "*"
+libc = "0.2.0"
+

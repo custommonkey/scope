@@ -1,5 +1,9 @@
 target
 
+.idea
+
+scope.iml
+
 *.bk
 
 .settings

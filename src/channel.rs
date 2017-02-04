@@ -11,6 +11,10 @@ use glium::Surface;
 use glium::index::NoIndices;
 use glium::index::PrimitiveType;
 
+use std::io::prelude::*;
+use std::fs::*;
+use std::io::BufReader;
+
 pub struct Channel<'a> {
     pub speed: f32,
     pub position: f32,
@@ -22,6 +26,7 @@ pub struct Channel<'a> {
 }
 
 #[derive(Copy, Clone)]
+#[derive(Debug)]
 pub struct Vertex {
     position: [f32; 2],
 }
@@ -35,6 +40,8 @@ impl<'a> Channel<'a> {
            program: &'a Program,
            params: &'a DrawParameters)
            -> Channel<'a> {
+
+
         Channel {
             speed: 0.0005,
             position: -0.5,
@@ -43,9 +50,7 @@ impl<'a> Channel<'a> {
             program: program,
             params: params,
             vertex: {
-                let vertices: Vec<Vertex> = (-90..91)
-                    .map(|n| Vertex { position: [(n as f32) / 100.0, y as f32] })
-                    .collect();
+                let vertices = load();
 
                 VertexBuffer::new(display, &vertices).unwrap()
             },
@@ -81,6 +86,29 @@ impl<'a> Channel<'a> {
                   &self.params)
             .unwrap();
     }
+}
+
+fn load() -> Vec<Vertex> {
+
+    let file = match File::open("../data/foo.txt") {
+        Err(why) => panic!("couldn't create {}", why),
+        Ok(file) => file,
+    };
+
+    let reader = BufReader::new(file);
+
+    let e = reader.lines().map(|l| l.unwrap()).enumerate();
+
+    let vv = e.map(|l| {
+            Vertex {
+                position: [((l.0 as f32) / 500.0) - 1.0, l.1.parse::<f32>().unwrap() / 20000.0],
+            }
+        })
+        .collect();
+
+    println!("{:?}", vv);
+
+    vv
 }
 
 trait Drawable {
